@@ -20,6 +20,7 @@ model User {
   updated_at DateTime @updatedAt
 
   role_users RoleUser[]
+  auths      Auth[]
 
   @@map("users")
 }
@@ -51,9 +52,14 @@ model RoleUser {
 model Auth {
   id         String   @id @default(uuid()) @db.Char(36)
   user_id    String   @db.VarChar(255)
+  password   String   @db.VarChar(255)
   provider   Provider @default(local)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+
+  User User @relation(fields: [user_id], references: [id])
+
+  @@map("auths")
 }
 
 enum Provider {

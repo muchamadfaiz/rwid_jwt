@@ -1,6 +1,8 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { AuthRepository } = require("./repositories/AuthRepository");
+const { AuthService } = require("./services/AuthService");
 const app = express();
 
 require("dotenv").config();
@@ -10,27 +12,29 @@ const users = [];
 app.use(express.json());
 
 app.post("/login", async (req, res, next) => {
-    console.log(users);
-    const user = users.find((user) => {
-        return user.username === req.body.username;
-    });
+    try {
+        const credential = {
+            name: req.body.name,
+            password: req.body.password,
+            provider: req.body.provider,
+        };
+        const user = await AuthRepository.login(credential);
 
-    if (!user) {
-        return res.status(404).json({ message: "user not found" });
+        const isMatched = await AuthService.validateCredential(
+            credential,
+            user
+        );
+
+        if (!isMatched) {
+            return res.status(401).json({ message: "password not match" });
+        }
+
+        const accessToken = AuthService.createToken(user);
+
+        return res.json({ message: "success", accessToken });
+    } catch (error) {
+        return next(error);
     }
-
-    const isMatched = await bcrypt.compare(req.body.password, user.password);
-
-    if (!isMatched) {
-        return res.status(401).json({ message: "password not match" });
-    }
-
-    const accessToken = jwt.sign(
-        { sub: user.username },
-        process.env.JWT_SECRET
-    );
-
-    return res.json({ message: "success", accessToken });
 });
 
 app.post("/register", async (req, res, next) => {
