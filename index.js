@@ -4,9 +4,9 @@ const jwt = require("jsonwebtoken");
 const { AuthController } = require("./controllers/AuthController");
 const { AuthValidator } = require("./validators/AuthValidator");
 const app = express();
+const { errorHandler, notFoundErrorHandler } = require("./errors");
 
 require("dotenv").config();
-
 const users = [];
 
 app.use(express.json());
@@ -48,5 +48,6 @@ app.get(
         res.json({ message: "success", users });
     }
 );
-
+app.use(notFoundErrorHandler);
+app.use(errorHandler);
 app.listen(3000);

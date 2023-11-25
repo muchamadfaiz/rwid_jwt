@@ -1,3 +1,4 @@
+const { NotFoundError } = require("../errors/NotFoundError");
 const { prisma } = require("../models");
 
 /**
@@ -16,7 +17,7 @@ class AuthRepository {
         });
 
         if (!user) {
-            throw new Error("User not found!");
+            throw new NotFoundError("User not found!");
         }
 
         return user;
